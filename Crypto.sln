@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28711.60
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crypto.Math", "Crypto.Math\Crypto.Math.csproj", "{237A3016-0A88-4C48-8509-C4B3485BCE8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crypto.Console", "Crypto.Console\Crypto.Console.csproj", "{5E207C6B-5FA0-4658-865C-6BE69F4CCE15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{237A3016-0A88-4C48-8509-C4B3485BCE8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{237A3016-0A88-4C48-8509-C4B3485BCE8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{237A3016-0A88-4C48-8509-C4B3485BCE8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{237A3016-0A88-4C48-8509-C4B3485BCE8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E207C6B-5FA0-4658-865C-6BE69F4CCE15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E207C6B-5FA0-4658-865C-6BE69F4CCE15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E207C6B-5FA0-4658-865C-6BE69F4CCE15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E207C6B-5FA0-4658-865C-6BE69F4CCE15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D945A8E-95F8-4A8F-AF0F-64A774132E77}
+	EndGlobalSection
+EndGlobal
