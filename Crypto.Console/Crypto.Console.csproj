@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="dmath.core" Version="1.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Crypto.Math\Crypto.Math.csproj" />
   </ItemGroup>
 

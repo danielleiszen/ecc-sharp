@@ -1,42 +1,73 @@
-﻿using Deveel.Math;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Numerics;
 
 namespace Crypto.Primitives
 {
     internal class WeierstrassCurve : EllypticCurve
     {
-        public WeierstrassCurve(BigDecimal aCoefficient, BigDecimal bConstant)
+        public WeierstrassCurve(BigInteger aCoefficient, BigInteger bConstant)
             : base(aCoefficient, bConstant)
         {
 
         }
 
-        public WeierstrassCurve(double aCoefficient, double bConstant)
+        public WeierstrassCurve(BigInteger aCoefficient, BigInteger bConstant, BigInteger modulo)
+            : base(aCoefficient, bConstant, modulo)
+        {
+
+        }
+
+
+        public WeierstrassCurve(int aCoefficient, int bConstant)
             : base(aCoefficient, bConstant)
         {
 
         }
 
-        internal override BigDecimal CalculateAdditionXCoordinate(BigDecimal beta, Point p1, Point p2)
+        internal override BigInteger CalculateAdditionXCoordinate(BigInteger beta, Point p1, Point p2)
         {
-            return BigMath.Subtract(
-                BigMath.Pow(beta, 2, Context), 
-                BigMath.Add(p1.XCoordinate, p2.XCoordinate, Context), Context);
+            return BigInteger.Subtract(
+                BigInteger.Pow(beta, 2),
+                BigInteger.Add(p1.XCoordinate, p2.XCoordinate)
+                );
         }
 
-        internal override BigDecimal CalculateBeta(Point p)
+        internal override BigInteger CalculateBeta(Point p)
         {
-            return BigMath.Divide(
-                BigMath.Add(
-                    BigMath.Multiply(
-                        BigDecimal.Parse("3", Context), 
-                        BigMath.Pow(p.XCoordinate, 2, Context)), 
+            return BigInteger.Multiply(
+                BigInteger.Add(
+                    BigInteger.Multiply(
+                        new BigInteger(3),
+                        BigInteger.Pow(p.XCoordinate, 2)), 
                     Coefficient),
-                BigMath.Multiply(
-                    BigDecimal.Parse("2", Context),
-                    p.YCoordinate), Context);
+                FindModularInverse(
+                    BigInteger.Multiply(
+                        new BigInteger(2),
+                        p.YCoordinate)
+                    ));
+        }
+
+        public override bool IsOnCurve(Point point)
+        {
+            var left = BigInteger.Remainder(
+                BigInteger.Pow(point.YCoordinate, 2), 
+                Modulo);
+
+            var right = BigInteger.Remainder(
+                BigInteger.Remainder(
+                    BigInteger.Multiply(
+                        BigInteger.Remainder(
+                            BigInteger.Multiply(point.XCoordinate, point.XCoordinate),
+                            Modulo),
+                        point.XCoordinate),
+                    Modulo) +
+                    BigInteger.Remainder(this.Coefficient * point.XCoordinate, Modulo) +
+                    this.Constant,
+                Modulo);
+
+            left = left.ToPositiveMod(Modulo);
+            right = right.ToPositiveMod(Modulo);
+
+            return BigInteger.Compare(left, right) == 0;
         }
     }
 }

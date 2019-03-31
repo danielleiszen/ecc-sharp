@@ -1,7 +1,5 @@
-﻿using Deveel.Math;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Numerics;
 
 namespace Crypto.Core
 {
@@ -15,7 +13,9 @@ namespace Crypto.Core
 
         public static BigInteger Generate(int bits = Configurations.MathConfiguration.DEFAULT_KEY_BITLENGTH)
         {
-            return new BigInteger(bits, Random);
+            byte[] data = new byte[(int)Math.Ceiling((double)bits / 8D)];
+            Random.NextBytes(data);
+            return BigInteger.Abs(new BigInteger(data));
         }
     }
 }

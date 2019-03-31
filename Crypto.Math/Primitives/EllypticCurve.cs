@@ -1,57 +1,79 @@
-﻿using Deveel.Math;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Diagnostics;
+using System.Numerics;
 
 namespace Crypto.Primitives
 {
     public abstract class EllypticCurve
     {
-        public BigDecimal Coefficient { get; private set; }
-        public BigDecimal Constant { get; private set; }
-        protected MathContext Context { get; private set; }
-
-        public EllypticCurve(BigDecimal aCoefficient, BigDecimal bConstant)
+        public BigInteger Coefficient { get; private set; }
+        public BigInteger Constant { get; private set; }
+        public BigInteger Modulo { get; private set; }
+        public EllypticCurve(BigInteger aCoefficient, BigInteger bConstant, BigInteger modulo)
         {
-            Context = Configurations.MathConfiguration.CreateContext();
+            Modulo = modulo;
             Coefficient = aCoefficient;
             Constant = bConstant;
         }
 
-        public EllypticCurve(double aCoefficient, double bConstant)
-            : this(new BigDecimal(aCoefficient), new BigDecimal(bConstant))
+        public EllypticCurve(BigInteger aCoefficient, BigInteger bConstant)
+            : this(aCoefficient, bConstant, Configurations.MathConfiguration.Modulo)
+        {
+        }
+
+        public EllypticCurve(int aCoefficient, int bConstant)
+            : this(new BigInteger(aCoefficient), new BigInteger(bConstant))
         {
 
         }
 
-        public static EllypticCurve CreateWeierstrass(double aCoefficient, double bConstant)
+        public static EllypticCurve CreateWeierstrass(int aCoefficient, int bConstant)
         {
             return new WeierstrassCurve(aCoefficient, bConstant);
         }
 
-        public static EllypticCurve CreateKublitz(double aCoefficient, double bConstant)
+        public static EllypticCurve CreateWeierstrass(int aCoefficient, int bConstant, BigInteger modulo)
         {
-            return new KublitzCurve(aCoefficient, bConstant);
+            return new WeierstrassCurve(aCoefficient, bConstant, modulo);
         }
 
-        internal virtual BigDecimal CalculateBeta(Point p1, Point p2)
+        public static EllypticCurve CreateKoblitz(int aCoefficient, int bConstant)
         {
-            return BigMath.Divide(
-                BigMath.Subtract(p2.YCoordinate, p1.YCoordinate, Context), 
-                BigMath.Subtract(p2.XCoordinate, p1.XCoordinate, Context), Context);
+            return new KoblitzCurve(aCoefficient, bConstant);
         }
 
-        internal abstract BigDecimal CalculateAdditionXCoordinate(BigDecimal beta, Point p1, Point p2);
+        internal abstract BigInteger CalculateBeta(Point p);
+        internal abstract BigInteger CalculateAdditionXCoordinate(BigInteger beta, Point p1, Point p2);
+        public abstract bool IsOnCurve(Point point);
 
-        internal virtual BigDecimal CalculateAdditionYCoordinate(BigDecimal beta, Point p1, BigDecimal x)
+        internal virtual BigInteger CalculateBeta(Point p1, Point p2)
         {
-            return BigMath.Subtract(
-                BigMath.Multiply(
+            return BigInteger.Multiply(
+                BigInteger.Subtract(p2.YCoordinate, p1.YCoordinate),
+                FindModularInverse(BigInteger.Subtract(p2.XCoordinate, p1.XCoordinate))
+                );
+        }
+
+        protected BigInteger FindModularInverse(BigInteger number)
+        {
+            number = number.ToPositiveMod(Modulo);
+            var ret = number.FindModularInverse(Modulo);
+
+            if(ret.HasValue == false)
+            {
+                throw new InvalidProgramException($"Modular inverse of {number} on F{Modulo} cannot be calculated");
+            }
+
+            return ret.Value;
+        }
+
+        internal virtual BigInteger CalculateAdditionYCoordinate(BigInteger beta, Point p1, BigInteger x)
+        {
+            return BigInteger.Subtract(
+                BigInteger.Multiply(
                     beta,
-                    BigMath.Subtract(p1.XCoordinate, x, Context), Context),
-                p1.YCoordinate, Context); 
+                    BigInteger.Subtract(p1.XCoordinate, x)),
+                p1.YCoordinate); 
         }
-
-        internal abstract BigDecimal CalculateBeta(Point p);
     }
 }

@@ -1,7 +1,5 @@
-﻿using Deveel.Math;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Numerics;
 
 namespace Crypto.Primitives
 {
@@ -9,7 +7,7 @@ namespace Crypto.Primitives
     {
         public static Point CalculateAddition(this EllypticCurve curve, Point p1, Point p2)
         {
-            var beta = default(BigDecimal);
+            var beta = default(BigInteger);
 
             if (p1 != null && p1.Equals(p2))
             {
@@ -26,8 +24,8 @@ namespace Crypto.Primitives
 
             var x = curve.CalculateAdditionXCoordinate(beta, p1, p2);
             var y = curve.CalculateAdditionYCoordinate(beta, p1, x);
-
-            return new Point(x, y);
+            
+            return new Point(x.ToPositiveMod(curve.Modulo), y.ToPositiveMod(curve.Modulo));
         }
 
         public static Point CalculateDoubling(this EllypticCurve curve, Point p)
@@ -37,14 +35,16 @@ namespace Crypto.Primitives
 
         public static Point CalculateMultiplication(this EllypticCurve curve, Point g, BigInteger scalar)
         {
-            var binary = scalar.ToString(2);
-            var p = default(Point);
+            var binary = scalar.ToBinaryString();
+            binary = binary.TrimStart('0');
+
+            var p = new Point(g.XCoordinate, g.YCoordinate);
 
             for(var i = 1; i < binary.Length; i++)
             {
                 bool add = binary[i] == '1';
 
-                p = curve.CalculateDoubling(p ?? g);
+                p = curve.CalculateDoubling(p);
 
                 if (add)
                 {

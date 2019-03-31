@@ -5,8 +5,4 @@
     <RootNamespace>Crypto</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="dmath.core" Version="1.7.0" />
-  </ItemGroup>
-
 </Project>
