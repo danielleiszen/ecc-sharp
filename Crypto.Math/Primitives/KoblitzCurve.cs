@@ -52,23 +52,24 @@ namespace Crypto.Primitives
                     );
         }
 
-        public override bool IsOnCurve(Point point)
+        public override BigInteger CalculateLeftSideOfEquality(Point point)
         {
-            var left = BigInteger.Add(
+            return BigInteger.Add(
                 BigInteger.Pow(point.YCoordinate, 2),
                 BigInteger.Multiply(
                     point.XCoordinate,
                     point.YCoordinate));
+        }
 
-            var right = BigInteger.Add(
+        public override BigInteger CalculateRightSideOfEquality(Point point)
+        {
+            return BigInteger.Add(
                 BigInteger.Pow(point.XCoordinate, 3),
                 BigInteger.Add(
                     BigInteger.Multiply(
                         BigInteger.Pow(point.XCoordinate, 2),
                         this.Coefficient),
                     this.Constant));
-
-            return BigInteger.Compare(left, right) == 0;
         }
     }
 }

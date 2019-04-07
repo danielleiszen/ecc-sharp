@@ -54,5 +54,10 @@ namespace Crypto.Primitives
 
             return p;
         }
+
+        public static BigInteger ToSecret(this CurvePoint point)
+        {
+            return BigInteger.Remainder(BigInteger.Multiply(point.Point.XCoordinate, point.Point.YCoordinate), point.Curve.Modulo);
+        }
     }
 }

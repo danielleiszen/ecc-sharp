@@ -14,7 +14,7 @@ namespace Crypto.Entities
         public Party(CurvePoint generator)
         {
             Generator = generator;
-            PrivateKey =  Core.RandomService.Generate(Configurations.MathConfiguration.KeyBitLength);
+            PrivateKey = BigInteger.Remainder(Core.RandomService.Generate(Configurations.MathConfiguration.KeyBitLength), generator.Order);
             PublicKey = generator.Multiply(PrivateKey);
         }
 
@@ -52,6 +52,11 @@ namespace Crypto.Entities
         public bool VerifySignature(string message, Point signature, CurvePoint publicKey)
         {
             return Generator.VerifySignature(message, signature, publicKey);
+        }
+
+        public CurvePoint Multiply(CurvePoint point)
+        {
+            return point.Multiply(PrivateKey);
         }
 
         public override string ToString()

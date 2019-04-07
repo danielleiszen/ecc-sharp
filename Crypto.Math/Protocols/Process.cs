@@ -2,10 +2,16 @@
 using Crypto.Primitives;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Crypto.Protocols
 {
+    public interface ISecretKeyProvider
+    {
+        BigInteger GetSecret();
+    }
+
     public abstract class Process
     {
         public CurvePoint Generator { get; private set; }

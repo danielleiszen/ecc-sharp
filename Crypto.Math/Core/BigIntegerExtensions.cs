@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace System.Numerics
@@ -91,33 +92,86 @@ namespace System.Numerics
             }
         }
 
+        public static bool EulersCriterion(this BigInteger a, BigInteger modulo)
+        {
+            var ex = (modulo - 1) / 2;
+            var res = BigInteger.ModPow(a, ex, modulo);
+            //var pres = res.ToPositiveMod(modulo);
+
+            if(res == 1) // || pres == 1)
+            {
+                return true;
+            }
+            else if(res == -1 || res == modulo - 1)
+            {
+                return false;
+            }
+            else
+            {
+                throw new InvalidProgramException("The Euler's Criterion calculation is wrong");
+            }
+        }
+
+        public static Tuple<BigInteger, BigInteger> FindModularSquareRoots(this BigInteger q, BigInteger modulo)
+        {
+            if (q.EulersCriterion(modulo))
+            {
+                // Step 1: Find a, omega2
+                BigInteger a = -1;
+                BigInteger omega2;
+
+                do
+                {
+                    a += 1;
+                    omega2 = (a * a + modulo - q) % modulo;
+                } while (omega2.EulersCriterion(modulo));
+
+                Tuple<BigInteger, BigInteger> mul(Tuple<BigInteger, BigInteger> aa, Tuple<BigInteger, BigInteger> bb)
+                {
+                    return new Tuple<BigInteger, BigInteger>(
+                        (aa.Item1 * bb.Item1 + aa.Item2 * bb.Item2 * omega2) % modulo,
+                        (aa.Item1 * bb.Item2 + bb.Item1 * aa.Item2) % modulo
+                    );
+                }
+
+                // Step 2: Compute power
+                Tuple<BigInteger, BigInteger> r = new Tuple<BigInteger, BigInteger>(1, 0);
+                Tuple<BigInteger, BigInteger> s = new Tuple<BigInteger, BigInteger>(a, 1);
+                BigInteger nn = ((modulo + 1) >> 1) % modulo;
+
+                while (nn > 0)
+                {
+                    if ((nn & 1) == 1)
+                    {
+                        r = mul(r, s);
+                    }
+                    s = mul(s, s);
+                    nn >>= 1;
+                }
+
+                // Step 3: Check x in Fp
+                if (r.Item2 != 0)
+                {
+                    return new Tuple<BigInteger, BigInteger>(0, 0);
+                }
+
+                // Step 5: Check x * x = n
+                if (r.Item1 * r.Item1 % modulo != q)
+                {
+                    return new Tuple<BigInteger, BigInteger>(0, 0);
+                }
+
+                // Step 4: Solutions
+                return new Tuple<BigInteger, BigInteger>(r.Item1, modulo - r.Item1);
+            }
+
+            // there is no root
+            return new Tuple<BigInteger, BigInteger>(0, 0);
+        }
+
         public static BigInteger ToPositiveMod(this BigInteger a, BigInteger m)
         {
             return BigInteger.Remainder(BigInteger.Add(BigInteger.Remainder(a, m), m), m);
-        }
-
-        public static BigInteger SquareRoot(this BigInteger x)
-        {
-            int b = 15; // this is the next bit we try 
-            var r = new BigInteger(BigInteger.Zero.ToByteArray()); // r will contain the result
-            var r2 = new BigInteger(r.ToByteArray()); // here we maintain r squared
-
-            while (b >= 0)
-            {
-                var sr2 = r2;
-                var sr = r;
-                // compute (r+(1<<b))**2, we have r**2 already.
-                r2 += (uint)((r << (1 + b)) + (1 << (b + b)));
-                r += (uint)(1 << b);
-                if (r2 > x)
-                {
-                    r = sr;
-                    r2 = sr2;
-                }
-                b--;
-            }
-
-            return r;
         }
 
         public static BigInteger SqareRoot2(this BigInteger n)
@@ -142,6 +196,32 @@ namespace System.Numerics
 
             return BigInteger.Subtract(a, BigInteger.One);
         }
+
+        public static BigInteger SqRtN(this BigInteger N)
+        {
+            /*++
+             *  Using Newton Raphson method we calculate the
+             *  square root (N/g + g)/2
+             */
+            BigInteger rootN = N;
+            int bitLength = 1; // There is a bug in finding bit length hence we start with 1 not 0
+            while (rootN / 2 != 0)
+            {
+                rootN /= 2;
+                bitLength++;
+            }
+            bitLength = (bitLength + 1) / 2;
+            rootN = N >> bitLength;
+
+            BigInteger lastRoot = BigInteger.Zero;
+            do
+            {
+                lastRoot = rootN;
+                rootN = (BigInteger.Divide(N, rootN) + rootN) >> 1;
+            }
+            while (!((rootN ^ lastRoot).ToString() == "0"));
+            return rootN;
+        } // SqRtN
 
         public static byte[] HexStringToByteArray(string hex)
         {

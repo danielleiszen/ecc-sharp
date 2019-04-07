@@ -1,10 +1,11 @@
 ﻿using Crypto.Entities;
 using Crypto.Primitives;
 using System;
+using System.Numerics;
 
 namespace Crypto.Protocols
 {
-    public interface IDiffeHelmanClient
+    public interface IDiffeHelmanClient : ISecretKeyProvider
     {
         void SendPublicKeyTo(IDiffeHelmanClient client);
         void GenerateSharedKey(Party remote);
@@ -50,6 +51,18 @@ namespace Crypto.Protocols
             {
                 Console.WriteLine($"Key: {dright.Shared.Point}");
                 Console.WriteLine($"The two keys are equal: {Shared.Point.Equals(dright.Shared.Point)}");
+            }
+        }
+
+        BigInteger ISecretKeyProvider.GetSecret()
+        {
+            if(Shared != null)
+            {
+                return Shared.ToSecret();
+            }
+            else
+            {
+                throw new InvalidOperationException("The key exchange has to be successfull in oder to generate a secret");
             }
         }
     }

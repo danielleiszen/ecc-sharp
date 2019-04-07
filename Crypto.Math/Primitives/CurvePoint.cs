@@ -50,7 +50,7 @@ namespace Crypto.Primitives
             var ret = BigInteger.Zero;
 
             var q = Curve.CalculateMultiplication(Point, BigInteger.Add(Curve.Modulo, BigInteger.One));
-            var m = BigInteger.Add(Curve.Modulo.SquareRoot().SquareRoot(), BigInteger.One);
+            var m = BigInteger.Add(Curve.Modulo.SqareRoot2().SqareRoot2(), BigInteger.One);
 
             for(var j = BigInteger.One; BigInteger.Compare(j, m) < 1; j = BigInteger.Add(j, BigInteger.One))
             {
@@ -102,6 +102,11 @@ namespace Crypto.Primitives
         public CurvePoint Multiply(BigInteger scalar)
         {
             return new CurvePoint(this, scalar);
+        }
+
+        public void Add(Point point)
+        {
+            Point = Curve.CalculateAddition(Point, point);
         }
 
         public Point SignMessage(string message, BigInteger privateKey, BigInteger? randomKey = default(BigInteger?))
@@ -197,6 +202,21 @@ namespace Crypto.Primitives
 
             return new CurvePoint(curve, g,
                 BigIntegerExtensions.FromBigEndianHexString("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"));
+        }
+
+        public static CurvePoint NIST121P192Generator()
+        {
+            var curve = EllypticCurve.CreateWeierstrass(
+                new BigInteger(-3),
+                BigIntegerExtensions.FromBigEndianHexString("64210519e59c80e70fa7e9ab72243049feb8deecc146b9b1"),
+                BigInteger.Parse("6277101735386680763835789423207666416083908700390324961279"));
+
+            var g = new Point(
+                BigIntegerExtensions.FromBigEndianHexString("188da80eb03090f67cbf20eb43a18800f4ff0afd82ff1012"),
+                BigIntegerExtensions.FromBigEndianHexString("07192b95ffc8da78631011ed6b24cdd573f977a11e794811"));
+
+            return new CurvePoint(curve, g,
+                BigInteger.Parse("6277101735386680763835789423176059013767194773182842284081"));
         }
 
         public static CurvePoint SimpleGenerator()

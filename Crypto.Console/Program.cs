@@ -2,6 +2,7 @@
 using Crypto.Primitives;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 
 namespace Crypto
@@ -10,19 +11,17 @@ namespace Crypto
     {
         static void Main(string[] args)
         {
-            Configurations.MathConfiguration.KeyBitLength = 32;
+            Configurations.MathConfiguration.KeyBitLength = 192;
 
-            var generator = CurvePoint.BitCoinGenerator();
-
+            var generator = CurvePoint.NIST121P192Generator();
             var alice = new Party(generator);
             var bob = new Party(generator);
 
-            SignMessage(alice, bob);
-
-            DiffieHelman(generator, alice, bob);
+            EncryptDecrypt(generator, alice, bob,
+                "Elképesztő a trió egyéni GS-statisztikája is, amit ha csak megközelít majd valaki, biztosan a sportág meghatározó egyénisége lesz. Lehet akár Alexander Zverev is, aki 22 éves lesz, de már 27. a pénzkereseti örökranglistán. Tíz tornát nyert pályafutása során, de Grand Slamen egy párizsi negyeddöntő a legjobb eredménye eddig. Sokan azt mondják, hogy az oroszból lett német, agresszív alapvonaljátékos Zverev lehet a fiatalok közül, aki először csúcsra ér.Bombaerős tenyeresei és fonákjai is életveszélyesek, magas testalkata ellenére is alacsony a súlypontja.A 220 kilométer / órás szerváira felkészülni szinte lehetetlen. Federer 22 éves kora előtt három hónappal, Nadal három nappal 19.születésnapja előtt, Djokovics pedig két hónappal 20.születésnapja előtt volt életében először harmadik a világranglistán.Zverevnek ez 19 és fél évesen sikerült.");
             //AttackDH(generator, alice, bob);
 
-            //BruteForce(generator, 211);
+            //BruteForce(generator, 1000);
         }
 
         public static void SignMessage(Party alice, Party bob)
@@ -49,6 +48,21 @@ namespace Crypto
 
             Console.WriteLine($"Alice: {alice}");
             Console.WriteLine($"Bob: {bob}");
+        }
+
+        public static void EncryptDecrypt(CurvePoint generator, Party alice, Party bob, string message)
+        {
+            Console.WriteLine($"Original text: {message}");
+
+            var aenc = Protocols.EncryptionDecryption.CreateClient(generator, alice);
+            var benc = Protocols.EncryptionDecryption.CreateClient(generator, bob);
+
+            var cypher = aenc.EncryptTo(message, bob.ToPublic());
+
+            Console.WriteLine($"Cypher encrypted to {cypher.Count()} points");
+            var text = benc.Decrypt(cypher);
+
+            Console.WriteLine($"Decrypted text: {text}");
         }
 
         public static void AttackDH(CurvePoint generator, Party alice, Party bob)
@@ -96,7 +110,14 @@ namespace Crypto
             for (var i = new BigInteger(2); i <= iterations; i++)
             {
                 p = g.Curve.CalculateAddition(p, g.Point);
-                Console.WriteLine($"P{i}: {p}");
+
+                var right = g.Curve.CalculateRightSideOfEquality(p);
+                var ys = right.FindModularSquareRoots(g.Curve.Modulo);
+
+                var on1 = g.Curve.IsOnCurve(new Point(p.XCoordinate, ys.Item1));
+                var on2 = g.Curve.IsOnCurve(new Point(p.XCoordinate, ys.Item2));
+
+                Console.WriteLine($"Y1: {on1}, Y2: {on2}, Original: {ys.Item1 == p.YCoordinate}, {ys.Item2 == p.YCoordinate}");
             }
 
             Console.WriteLine($"Multiplication: {m}");

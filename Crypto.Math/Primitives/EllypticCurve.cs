@@ -37,6 +37,11 @@ namespace Crypto.Primitives
             return new WeierstrassCurve(aCoefficient, bConstant, modulo);
         }
 
+        public static EllypticCurve CreateWeierstrass(BigInteger aCoefficient, BigInteger bConstant, BigInteger modulo)
+        {
+            return new WeierstrassCurve(aCoefficient, bConstant, modulo);
+        }
+
         public static EllypticCurve CreateKoblitz(int aCoefficient, int bConstant)
         {
             return new KoblitzCurve(aCoefficient, bConstant);
@@ -44,8 +49,19 @@ namespace Crypto.Primitives
 
         internal abstract BigInteger CalculateBeta(Point p);
         internal abstract BigInteger CalculateAdditionXCoordinate(BigInteger beta, Point p1, Point p2);
-        public abstract bool IsOnCurve(Point point);
+        public virtual bool IsOnCurve(Point point)
+        {
+            var left = CalculateLeftSideOfEquality(point);
+            var right = CalculateRightSideOfEquality(point);
 
+            left = left.ToPositiveMod(Modulo);
+            right = right.ToPositiveMod(Modulo);
+
+            return BigInteger.Compare(left, right) == 0;
+        }
+
+        public abstract BigInteger CalculateLeftSideOfEquality(Point point);
+        public abstract BigInteger CalculateRightSideOfEquality(Point point);
         internal virtual BigInteger CalculateBeta(Point p1, Point p2)
         {
             return BigInteger.Multiply(

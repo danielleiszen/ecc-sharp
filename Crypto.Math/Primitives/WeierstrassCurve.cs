@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Diagnostics;
+using System.Numerics;
 
 namespace Crypto.Primitives
 {
@@ -46,28 +48,37 @@ namespace Crypto.Primitives
                     ));
         }
 
-        public override bool IsOnCurve(Point point)
+        public override BigInteger CalculateLeftSideOfEquality(Point point)
         {
-            var left = BigInteger.Remainder(
-                BigInteger.Pow(point.YCoordinate, 2), 
+            return BigInteger.Remainder(
+                BigInteger.Pow(point.YCoordinate, 2),
                 Modulo);
+        }
 
-            var right = BigInteger.Remainder(
-                BigInteger.Remainder(
-                    BigInteger.Multiply(
-                        BigInteger.Remainder(
-                            BigInteger.Multiply(point.XCoordinate, point.XCoordinate),
-                            Modulo),
-                        point.XCoordinate),
-                    Modulo) +
-                    BigInteger.Remainder(this.Coefficient * point.XCoordinate, Modulo) +
-                    this.Constant,
-                Modulo);
+        public override BigInteger CalculateRightSideOfEquality(Point point)
+        {
+            var lx3 = BigInteger.Pow(point.XCoordinate, 3);
+            var lax = Coefficient * point.XCoordinate;
 
-            left = left.ToPositiveMod(Modulo);
-            right = right.ToPositiveMod(Modulo);
+            var l2 = (lx3 + lax + Constant) % Modulo;
 
-            return BigInteger.Compare(left, right) == 0;
+            //var x3 = BigInteger.Remainder(
+            //    BigInteger.Multiply(
+            //        BigInteger.Remainder(
+            //            BigInteger.Multiply(point.XCoordinate, point.XCoordinate),
+            //            Modulo),
+            //        point.XCoordinate),
+            //    Modulo);
+            //var ax = BigInteger.Remainder(
+            //    BigInteger.Multiply(this.Coefficient, point.XCoordinate),
+            //    Modulo);
+
+            //var ret = BigInteger.Remainder(
+            //        BigInteger.Add(x3,
+            //        BigInteger.Remainder(BigInteger.Add(ax, this.Constant), Modulo)
+            //        ), Modulo);
+
+            return l2;
         }
     }
 }
